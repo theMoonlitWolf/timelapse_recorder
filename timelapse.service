@@ -1,0 +1,15 @@
+[Unit]
+Description=Timelapse Recorder
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/pi/timelapse.py
+Restart=on-failure
+User=pi
+Group=pi
+WorkingDirectory=/home/pi
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
