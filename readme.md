@@ -319,6 +319,13 @@ git pull
 sudo systemctl restart timelapse_recorder.service
 ```
 
+- If it fails or the púrocess returns imediatelly after start, you may want to delete and clone it again:
+```sh
+sudo rm -r /home/pi/timelapse_recorder
+git clone <repository_url> /home/pi/timelapse_recorder
+sudo systemctl start timelapse_recorder.service
+```
+
 ---
 
 ## Troubleshooting
