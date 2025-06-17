@@ -53,6 +53,7 @@ LOCAL_LOG_PATH = "/tmp/timelapse.log"
 RENDER_FOLDER = f"{MOUNT_POINT}/render"
 
 RENDER_WAIT_SECONDS = 5  # Seconds to wait before rendering
+BATCH_SIZE = 10  # Number of images per batch
 
 render_skip_requested = False  # Global flag for skipping render
 
@@ -188,30 +189,44 @@ def delete_old_images():
 def capture_images(interval):
     global recording
     count = 0
-    next_capture = time.time()
+    next_img_index = 0
+
     while recording:
-        next_capture += interval
-        if count % 2:
-            set_led_status("recording")
-        else:
-            set_led_status("recording2")
-        
-        filename = f"{IMG_FOLDER}/img{count:05d}.jpg"
-        cmd = ["libcamera-still", "-o", filename, "--timeout", "100", "--nopreview", 
-               "--width", "1440", "--height", "1080", "--quality", "90"]
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        logging.debug(f"Captured {filename}")
+        set_led_status("recording" if (count % 2 == 0) else "recording2")
+        # Calculate how many images already exist
+        existing_images = sorted(glob.glob(f"{IMG_FOLDER}/img*.jpg"))
+        next_img_index = len(existing_images)
+        # Prepare output pattern for libcamera-still
+        output_pattern = f"{IMG_FOLDER}/img%05d.jpg"
+        # Calculate total time for this batch
+        total_time = int(interval * BATCH_SIZE * 1000)
+        interval_ms = int(interval * 1000)
+        # Start libcamera-still in timelapse mode for this batch
+        cmd = [
+            "libcamera-still",
+            "-t", str(total_time),
+            "--timelapse", str(interval_ms),
+            "-o", output_pattern,
+            "--width", "1440",
+            "--height", "1080",
+            "--quality", "90",
+            "--nopreview",
+            "--start", str(next_img_index)
+        ]
+        # Remove --start if not supported by your libcamera-still version
+        # If not supported, manually rename/move files after each batch
 
+        logging.info(f"Capturing batch of {BATCH_SIZE} images starting at index {next_img_index}")
+        proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # Poll for stop button during capture
+        while proc.poll() is None:
+            if not recording:
+                proc.terminate()
+                proc.wait()
+                logging.info("Recording stopped by user during batch capture.")
+                break
+            time.sleep(0.2)
         count += 1
-
-        if next_capture < time.time():
-            logging.warning("Warning: capture is lagging behind.")
-            next_capture = time.time()
-        else:
-            while next_capture > time.time():
-                if not recording:
-                    break
-                time.sleep(0.05)
 
 def create_video():
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -250,6 +265,7 @@ def button_start_stop_pressed(channel):
         set_led_status("recording")
         recording = True
         start_time = time.time()
+        GPIO.remove_event_detect(BUTTON_SPEED)
         logging.info("Starting recording")
         capture_images_thread = threading.Thread(target=capture_images, args=(speed_presets[speed_index][1],))
         capture_images_thread.start()
