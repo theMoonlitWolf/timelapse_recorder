@@ -47,7 +47,7 @@ capture_images_thread = None
 next_capture = time.time()
 start_time = time.time()
 
-MOUNT_POINT = "/media/usb"
+MOUNT_POINT = "/home/pi/usb" # Pi user needs to have permission
 IMG_FOLDER = f"{MOUNT_POINT}/timelapse_images"
 LOCAL_LOG_PATH = "/tmp/timelapse.log"
 RENDER_FOLDER = f"{MOUNT_POINT}/render"
@@ -134,7 +134,7 @@ def mount_usb(device):
         return False
     if not os.path.exists(MOUNT_POINT):
         os.makedirs(MOUNT_POINT, exist_ok=True)
-    ret = run_and_log(["sudo", "mount", device, MOUNT_POINT])
+    ret = run_and_log(["sudo", "mount", "-o", "uid=pi,gid=pi", device, MOUNT_POINT])
     return ret == 0
 
 def unmount_usb():
@@ -232,6 +232,7 @@ def power_down():
     subprocess.run(["sudo", "poweroff"])
 
 def button_speed_pressed(channel):
+    set_led_status("off")
     global speed_index
     speed_index = (speed_index + 1) % len(speed_presets)
     name, _ = speed_presets[speed_index]
