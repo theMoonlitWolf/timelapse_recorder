@@ -199,7 +199,7 @@ def capture_images(interval):
         filename = f"{IMG_FOLDER}/img{count:05d}.jpg"
         cmd = ["libcamera-still", "-o", filename, "--timeout", "100", "--nopreview", 
                "--width", "1440", "--height", "1080", "--quality", "90"]
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        run_and_log(cmd)
         logging.debug(f"Captured {filename}")
 
         count += 1
