@@ -339,7 +339,6 @@ def create_video_from_folder(img_folder, output_folder):
     cmd = [
         "ffmpeg", "-framerate", f"{FPS}",
         "-i", os.path.join(img_folder, "img%05d.jpg"),
-        "-vf", "scale=1280:960,setsar=1:1",  # adjust as needed
         "-c:v", "libx264", "-pix_fmt", "yuv420p",
         output_file
     ]
