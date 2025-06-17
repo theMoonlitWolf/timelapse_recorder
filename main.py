@@ -238,11 +238,11 @@ def power_down():
     subprocess.run(["sudo", "poweroff"])
 
 def shutdown():
+    set_led_status("shutdown")
     usb_log_path = os.path.join(MOUNT_POINT, f"timelapse.log")
     shutil.copy(LOCAL_LOG_PATH, usb_log_path)
     logging.info(f"Copied log to {usb_log_path}")
     logging.info("Unmounting USB and powering down in 1 second...")
-    set_led_status("shutdown")
     time.sleep(1)
     unmount_usb()
     power_down()
