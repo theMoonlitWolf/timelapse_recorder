@@ -193,17 +193,17 @@ LEDs are connected between the GPIO pin and a ground (GND) pin with a suitable r
 
 ## LED Status Table
 
-| Status         | Meaning                                 | Color         |
-|----------------|-----------------------------------------|---------------|
-| off            | Idle/shutdown                           | off           |
-| waiting        | Waiting for USB or before render        | yellow        |
-| speed          | Speed selection feedback                | yellow        |
-| ready          | Ready to record                         | green         |
-| recording      | Recording timelapse                     | red           |
-| video          | Rendering video                         | blue          |
-| error          | Error occurred                          | magenta       |
-| shutdown       | Shutting down                           | cyan          |
-| selftest_*     | Startup self-test (white/red/green/blue)| various       |
+| Status         | Meaning                                 | Color               |
+|----------------|-----------------------------------------|---------------------|
+| off            | Idle/shutdown                           | off                 |
+| waiting        | Waiting for USB or before render        | yellow              |
+| speed          | Speed selection feedback                | yellow              |
+| ready          | Ready to record                         | green               |
+| recording      | Recording timelapse                     | red-yellow flashing |
+| video          | Rendering video                         | blue                |
+| error          | Error occurred                          | magenta             |
+| shutdown       | Shutting down                           | cyan                |
+| selftest_*     | Startup self-test (white/red/green/blue)| various             |
 
 
 ### Default Speed Presets

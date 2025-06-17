@@ -65,14 +65,15 @@ GPIO.setup(BUTTON_START_STOP, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # LED status definitions
 LED_STATUS = {
-    "off":      (0, 0, 0),
-    "waiting":  (1, 1, 0),  # yellow
-    "speed":   (1, 1, 0),   # yellow
-    "ready":    (0, 1, 0),  # green
-    "recording":(1, 0, 0),  # red
-    "video":    (0, 0, 1),  # blue
-    "error":    (1, 0, 1),  # magenta
-    "shutdown": (0, 1, 1),  # cyan
+    "off":       (0, 0, 0),
+    "waiting":   (1, 1, 0),  # yellow
+    "speed":     (1, 1, 0),   # yellow
+    "ready":     (0, 1, 0),  # green
+    "recording": (1, 0, 0),  # red
+    "recording2":(1, 1, 0),  #yellow
+    "video":     (0, 0, 1),  # blue
+    "error":     (1, 0, 1),  # magenta
+    "shutdown":  (0, 1, 1),  # cyan
     "selftest_white": (1, 1, 1),  # white
     "selftest_red":   (1, 0, 0),  # red
     "selftest_green": (0, 1, 0),  # green
@@ -193,7 +194,7 @@ def capture_images(interval):
         if count % 2:
             set_led_status("recording")
         else:
-            set_led_status("off")
+            set_led_status("recording2")
         
         filename = f"{IMG_FOLDER}/img{count:05d}.jpg"
         cmd = ["libcamera-still", "-o", filename, "--timeout", "100", "--nopreview", 
