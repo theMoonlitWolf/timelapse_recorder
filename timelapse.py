@@ -190,6 +190,11 @@ def capture_images(interval):
     next_capture = time.time()
     while recording:
         next_capture += interval
+        if count % 2:
+            set_led_status("recording")
+        else:
+            set_led_status("off")
+        
         filename = f"{IMG_FOLDER}/img{count:05d}.jpg"
         cmd = ["libcamera-still", "-o", filename, "--timeout", "100", "--nopreview", 
                "--width", "1440", "--height", "1080", "--quality", "90"]
