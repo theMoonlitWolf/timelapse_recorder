@@ -3,7 +3,7 @@ Description=Timelapse Recorder
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/pi/timelapse.py
+ExecStart=/usr/bin/python3 /home/pi/timelapse_recorder/main.py
 Restart=on-failure
 User=pi
 Group=pi
