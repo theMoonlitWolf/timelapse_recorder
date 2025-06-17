@@ -20,6 +20,7 @@ import sys
 import glob
 
 import RPi.GPIO as GPIO
+from picamera2 import Picamera2
 from datetime import timedelta
 
 # GPIO setup
@@ -32,8 +33,8 @@ BUTTON_START_STOP = 6
 FPS = 24
 # Speed presets: (name, interval seconds)
 speed_presets = [
+    ("10x", 10/FPS),
     ("30x", 30/FPS),
-    ("50x", 50/FPS),
     ("100x", 100/FPS),
     ("200x", 200/FPS),
     ("500x", 500/FPS),]
@@ -44,11 +45,13 @@ done = False
 
 capture_images_thread = None
 
+picam2 = Picamera2()
+
 next_capture = time.time()
 start_time = time.time()
 
 MOUNT_POINT = "/home/pi/usb" # Pi user needs to have permission
-IMG_FOLDER = f"{MOUNT_POINT}/timelapse_images"
+IMG_FOLDER = f"{MOUNT_POINT}/render"
 LOCAL_LOG_PATH = "/tmp/timelapse.log"
 RENDER_FOLDER = f"{MOUNT_POINT}/render"
 
@@ -186,20 +189,21 @@ def delete_old_images():
         logging.info("Creating image folder")
 
 def capture_images(interval):
-    global recording
+    global recording, picam2
+    picam2.configure(picam2.create_still_configuration())
+    picam2.start()
     count = 0
     next_capture = time.time()
     while recording:
         next_capture += interval
-        if count % 2:
-            set_led_status("recording")
-        else:
-            set_led_status("recording2")
+        set_led_status("recording" if count%2 else "recording2")
+
         
         filename = f"{IMG_FOLDER}/img{count:05d}.jpg"
-        cmd = ["libcamera-still", "-o", filename, "--timeout", "100", "--nopreview", 
-               "--width", "1440", "--height", "1080", "--quality", "90"]
-        run_and_log(cmd)
+        # cmd = ["libcamera-still", "-o", filename, "--timeout", "100", "--nopreview", 
+        #        "--width", "1440", "--height", "1080", "--quality", "90"]
+        # run_and_log(cmd)
+        picam2.capture_file(filename)
         logging.debug(f"Captured {filename}")
 
         count += 1
@@ -311,9 +315,6 @@ def create_video_from_folder(img_folder, output_folder):
     logging.info(f"Video saved to {output_file}")
 
 def wait_before_render():
-    """
-    Wait a short time before rendering. If speed button is pressed, rename image folder to render and exit.
-    """
     global render_skip_requested
     render_skip_requested = False
 
@@ -348,26 +349,6 @@ def main():
         wait_for_usb()
         if os.path.isdir(RENDER_FOLDER):
             # Wait before rendering, allow user to skip and save images for later rendering
-            if wait_before_render():
-                # User pressed speed: move images to render folder and quit
-                try:
-                    if os.path.exists(RENDER_FOLDER):
-                        shutil.rmtree(RENDER_FOLDER)
-                    if os.path.exists(IMG_FOLDER):
-                        shutil.move(IMG_FOLDER, RENDER_FOLDER)
-                        logging.info(f"Moved {IMG_FOLDER} to {RENDER_FOLDER} for later rendering.")
-                    else:
-                        logging.warning(f"No image folder {IMG_FOLDER} found to move.")
-                        blink_led_status("error", times=3, interval=0.2)
-                except Exception as e:
-                    logging.error(f"Failed to move image folder: {e}")
-                    blink_led_status("error", times=3, interval=0.2)
-                set_led_status("shutdown")
-                logging.info("Render skipped by user. Powering down in 3 seconds.")
-                time.sleep(3)
-                power_down()
-                return
-            # Otherwise, proceed to render
             set_led_status("video")
             create_video_from_folder(RENDER_FOLDER, MOUNT_POINT)
             # Delete the render folder after rendering
