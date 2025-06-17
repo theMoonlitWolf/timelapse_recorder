@@ -285,6 +285,7 @@ def button_start_stop_pressed(channel):
         recording = True
         start_time = time.time()
         logging.info("Starting recording")
+        GPIO.remove_event_detect(BUTTON_SPEED)
         capture_images_thread = threading.Thread(target=capture_images, args=(speed_presets[speed_index][1],))
         capture_images_thread.start()
     else:
@@ -294,7 +295,6 @@ def button_start_stop_pressed(channel):
         if capture_images_thread is not None:
             capture_images_thread.join()
         time.sleep(1)
-        set_led_status("video")
         recording_duration = time.time() - start_time
         num_images = len([f for f in os.listdir(IMG_FOLDER) if f.endswith(".jpg")])
         video_duration = num_images / FPS if num_images else 0
@@ -318,7 +318,8 @@ def button_start_stop_pressed(channel):
                 logging.info("Skiping render")
                 shutdown()
                 return
-
+        
+        set_led_status("video")
         create_video()
         shutdown()
 
