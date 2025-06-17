@@ -35,6 +35,7 @@ FPS = 24
 speed_presets = [
     ("10x", 10/FPS),
     ("30x", 30/FPS),
+    ("50x", 50/FPS),
     ("100x", 100/FPS),
     ("200x", 200/FPS),
     ("500x", 500/FPS),]
@@ -51,7 +52,7 @@ next_capture = time.time()
 start_time = time.time()
 
 MOUNT_POINT = "/home/pi/usb" # Pi user needs to have permission
-IMG_FOLDER = f"{MOUNT_POINT}/render"
+IMG_FOLDER = f"{MOUNT_POINT}/timelapse_images"
 LOCAL_LOG_PATH = "/tmp/timelapse.log"
 RENDER_FOLDER = f"{MOUNT_POINT}/render"
 

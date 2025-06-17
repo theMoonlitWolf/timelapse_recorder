@@ -114,10 +114,9 @@ probably `https://github.com/theMoonlitWolf/timelapse_recorder`.
 
 ```sh
 sudo apt update
-sudo apt install python3 python3-pip ffmpeg libcamera-apps
+sudo apt install -y python3 python3-pip ffmpeg python3-picamera2
 pip3 install RPi.GPIO
 ```
-> **Note:** You may need to accept installation of additional packages.
 
 ---
 
@@ -175,7 +174,7 @@ LEDs are connected between the GPIO pin and a ground (GND) pin with a suitable r
 - Raspberry Pi OS Lite (or compatible Linux)
 - Python 3
 - [RPi.GPIO](https://pypi.org/project/RPi.GPIO/) (usually preinstalled)
-- [libcamera-still](https://www.raspberrypi.com/documentation/computers/camera_software.html) (for image capture)
+- [Picamera2](https://www.raspberrypi.com/documentation/computers/camera_software.html#picamera2) (for image capture)
 - [ffmpeg](https://ffmpeg.org/) (for video rendering)
 
 ---
@@ -193,28 +192,29 @@ LEDs are connected between the GPIO pin and a ground (GND) pin with a suitable r
 
 ## LED Status Table
 
-| Status         | Meaning                                 | Color               |
-|----------------|-----------------------------------------|---------------------|
-| off            | Idle/shutdown                           | off                 |
-| waiting        | Waiting for USB or before render        | yellow              |
-| speed          | Speed selection feedback                | yellow              |
-| ready          | Ready to record                         | green               |
-| recording      | Recording timelapse                     | red-yellow flashing |
-| video          | Rendering video                         | blue                |
-| error          | Error occurred                          | magenta             |
-| shutdown       | Shutting down                           | cyan                |
-| selftest_*     | Startup self-test (white/red/green/blue)| various             |
+| Status         | Meaning                                 | Color                                     |
+|----------------|-----------------------------------------|-------------------------------------------|
+| off            | Idle/shutdown                           | off                                       |
+| waiting        | Waiting for USB or before render        | yellow                                    |
+| speed          | Speed selection feedback                | yellow                                    |
+| ready          | Ready to record                         | green                                     |
+| recording      | Recording timelapse                     | alternating yellow and red on every frame |
+| video          | Rendering video                         | blue                                      |
+| error          | Error occurred                          | magenta                                   |
+| shutdown       | Shutting down                           | cyan                                      |
+| selftest_*     | Startup self-test (white/red/green/blue)| various                                   |
 
 
 ### Default Speed Presets
 
-| Speed Preset   | Description                          | LED Blinks |
-|----------------|--------------------------------------|------------|
-| 30x            | 1 frame every 1.25 seconds           | 1          |
-| 50x            | 1 frame every 2.08 seconds           | 2          |
-| 100x           | 1 frame every 4.17 seconds           | 3          |
-| 200x           | 1 frame every 8.33 seconds           | 4          |
-| 500x           | 1 frame every 20.83 seconds          | 5          |
+| Speed Preset | Description                  | LED Blinks |
+|--------------|------------------------------|------------|
+| 10x          | 1 frame every 0.42 seconds   | 1          |
+| 30x          | 1 frame every 1.25 seconds   | 2          |
+| 50x          | 1 frame every 2.08 seconds   | 3          |
+| 100x         | 1 frame every 4.17 seconds   | 4          |
+| 200x         | 1 frame every 8.33 seconds   | 5          |
+| 500x         | 1 frame every 20.83 seconds  | 6          |
 
 ---
 
@@ -319,11 +319,11 @@ git pull
 sudo systemctl restart timelapse_recorder.service
 ```
 
-- If it fails or the púrocess returns imediatelly after start, you may want to delete and clone it again:
+- If it fails or the process returns imediatelly after start, you may want to delete and clone it again:
 ```sh
 sudo rm -r /home/pi/timelapse_recorder
 git clone <repository_url> /home/pi/timelapse_recorder
-sudo systemctl start timelapse_recorder.service
+sudo systemctl restart timelapse_recorder.service
 ```
 
 ---
