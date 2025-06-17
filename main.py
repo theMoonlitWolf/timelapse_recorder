@@ -289,6 +289,7 @@ def button_start_stop_pressed(channel):
         capture_images_thread = threading.Thread(target=capture_images, args=(speed_presets[speed_index][1],))
         capture_images_thread.start()
     else:
+        set_led_status("video")
         logging.info("Stopping recording")
         recording = False
         done = True

@@ -236,7 +236,7 @@ This shows all output and errors from the script in real time.
 
 - The Pi waits a few seconds before rendering.
 - **To skip rendering and save images for later:**  
-  During the waiting period (yellow LED), **press the SPEED button**.
+  During the waiting period (yellow status, right after first blue status), **press the SPEED button**.
 - The Pi will move the images to the `render` folder and power down.
 - Remove the USB drive and connect it to your computer.
 
