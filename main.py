@@ -122,6 +122,9 @@ def run_and_log(cmd):
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
     for line in process.stdout:
         logging.info(line.rstrip())
+    return process
+
+def wait_for_process(process):
     process.stdout.close()
     returncode = process.wait()
     if returncode != 0:
@@ -136,7 +139,8 @@ def mount_usb(device):
         return False
     if not os.path.exists(MOUNT_POINT):
         os.makedirs(MOUNT_POINT, exist_ok=True)
-    ret = run_and_log(["sudo", "mount", "-o", "uid=pi,gid=pi", device, MOUNT_POINT])
+    proc = run_and_log(["sudo", "mount", "-o", "uid=pi,gid=pi", device, MOUNT_POINT])
+    ret = wait_for_process(proc)
     return ret == 0
 
 def unmount_usb():
@@ -195,6 +199,7 @@ def capture_images(interval):
         set_led_status("recording" if (count % 2 == 0) else "recording2")
         # Calculate how many images already exist
         existing_images = sorted(glob.glob(f"{IMG_FOLDER}/img*.jpg"))
+        logging.info(f"Existing: {len(existing_images)}")
         next_img_index = len(existing_images)
         # Prepare output pattern for libcamera-still
         output_pattern = f"{IMG_FOLDER}/img%05d.jpg"
@@ -217,7 +222,7 @@ def capture_images(interval):
         # If not supported, manually rename/move files after each batch
 
         logging.info(f"Capturing batch of {BATCH_SIZE} images starting at index {next_img_index}")
-        proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        proc = run_and_log(cmd)
         # Poll for stop button during capture
         while proc.poll() is None:
             if not recording:
@@ -239,7 +244,8 @@ def create_video():
     ]
     logging.info("Creating video...")
     set_led_status("video")
-    run_and_log(cmd)
+    proc = run_and_log(cmd)
+    wait_for_process(proc)
     logging.info(f"Video saved to {output_file}")
 
 def power_down():
@@ -323,7 +329,8 @@ def create_video_from_folder(img_folder, output_folder):
     ]
     logging.info(f"Rendering video from {img_folder} to {output_file}...")
     set_led_status("video")
-    run_and_log(cmd)
+    proc = run_and_log(cmd)
+    wait_for_process(proc)
     logging.info(f"Video saved to {output_file}")
 
 def wait_before_render():
