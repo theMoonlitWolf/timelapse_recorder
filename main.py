@@ -47,7 +47,7 @@ capture_images_thread = None
 next_capture = time.time()
 start_time = time.time()
 
-MOUNT_POINT = "/media/usb"
+MOUNT_POINT = "/home/pi/usb" # Pi user needs to have permission
 IMG_FOLDER = f"{MOUNT_POINT}/timelapse_images"
 LOCAL_LOG_PATH = "/tmp/timelapse.log"
 RENDER_FOLDER = f"{MOUNT_POINT}/render"
