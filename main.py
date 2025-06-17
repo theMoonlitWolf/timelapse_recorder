@@ -246,6 +246,24 @@ def button_speed_pressed(channel):
     blink_led_status("speed", times=speed_index+1)
     set_led_status("ready")
 
+def wait_before_render():
+    global render_skip_requested
+    render_skip_requested = False
+
+    def on_speed_press(channel):
+        global render_skip_requested
+        render_skip_requested = True
+
+    GPIO.add_event_detect(BUTTON_SPEED, GPIO.FALLING, callback=on_speed_press, bouncetime=300)
+    set_led_status("waiting")
+    logging.info(f"Waiting {RENDER_WAIT_SECONDS} seconds before rendering. Press SPEED to skip and save images for later rendering.")
+    for i in range(RENDER_WAIT_SECONDS):
+        if render_skip_requested:
+            break
+        time.sleep(1)
+    GPIO.remove_event_detect(BUTTON_SPEED)
+    return render_skip_requested
+
 def button_start_stop_pressed(channel):
     global recording, start_time, capture_images_thread, done
     if done:
@@ -281,6 +299,18 @@ def button_start_stop_pressed(channel):
         logging.info("--------------------------")
         logging.info("")
 
+        if wait_before_render():
+            if os.path.isdir(RENDER_FOLDER):
+                shutil.rmtree(RENDER_FOLDER)
+            if os.path.isdir(IMG_FOLDER):
+                shutil.copytree(IMG_FOLDER, RENDER_FOLDER)
+                logging.info("Skiping render, unmounting USB and powering down in 3 second...")
+                set_led_status("shutdown")
+                time.sleep(3)
+                unmount_usb()
+                power_down()
+                return
+
         create_video()
         usb_log_path = os.path.join(MOUNT_POINT, f"timelapse.log")
         shutil.copy(LOCAL_LOG_PATH, usb_log_path)
@@ -314,24 +344,6 @@ def create_video_from_folder(img_folder, output_folder):
     set_led_status("video")
     run_and_log(cmd)
     logging.info(f"Video saved to {output_file}")
-
-def wait_before_render():
-    global render_skip_requested
-    render_skip_requested = False
-
-    def on_speed_press(channel):
-        global render_skip_requested
-        render_skip_requested = True
-
-    GPIO.add_event_detect(BUTTON_SPEED, GPIO.FALLING, callback=on_speed_press, bouncetime=300)
-    set_led_status("waiting")
-    logging.info(f"Waiting {RENDER_WAIT_SECONDS} seconds before rendering. Press SPEED to skip and save images for later rendering.")
-    for i in range(RENDER_WAIT_SECONDS):
-        if render_skip_requested:
-            break
-        time.sleep(1)
-    GPIO.remove_event_detect(BUTTON_SPEED)
-    return render_skip_requested
 
 def main():
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
