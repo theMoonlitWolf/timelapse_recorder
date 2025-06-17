@@ -337,6 +337,13 @@ sudo systemctl restart timelapse_recorder.service
 
 ---
 
+## Changelog
+
+- **1.0.0**
+   First working version, needs to be instlled new
+
+---
+
 ## License
 
 MIT License
