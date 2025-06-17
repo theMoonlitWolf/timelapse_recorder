@@ -341,6 +341,10 @@ sudo systemctl restart timelapse_recorder.service
 
 - **1.0.0**
    First working version, needs to be instlled new
+- **1.0.1**
+   Added forgotten delay to wait for render skipping
+- **1.0.2**
+   Consistent shutdown procedure
 
 ---
 

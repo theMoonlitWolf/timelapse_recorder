@@ -237,6 +237,17 @@ def power_down():
     set_led_status("off")
     subprocess.run(["sudo", "poweroff"])
 
+def shutdown():
+    usb_log_path = os.path.join(MOUNT_POINT, f"timelapse.log")
+    shutil.copy(LOCAL_LOG_PATH, usb_log_path)
+    logging.info(f"Copied log to {usb_log_path}")
+    logging.info("Unmounting USB and powering down in 1 second...")
+    set_led_status("shutdown")
+    time.sleep(1)
+    unmount_usb()
+    power_down()
+
+
 def button_speed_pressed(channel):
     set_led_status("off")
     global speed_index
@@ -304,22 +315,12 @@ def button_start_stop_pressed(channel):
                 shutil.rmtree(RENDER_FOLDER)
             if os.path.isdir(IMG_FOLDER):
                 shutil.copytree(IMG_FOLDER, RENDER_FOLDER)
-                logging.info("Skiping render, unmounting USB and powering down in 3 second...")
-                set_led_status("shutdown")
-                time.sleep(3)
-                unmount_usb()
-                power_down()
+                logging.info("Skiping render")
+                shutdown()
                 return
 
         create_video()
-        usb_log_path = os.path.join(MOUNT_POINT, f"timelapse.log")
-        shutil.copy(LOCAL_LOG_PATH, usb_log_path)
-        logging.info(f"Copied log to {usb_log_path}")
-        logging.info("Unmounting USB and powering down in 1 second...")
-        set_led_status("shutdown")
-        time.sleep(1)
-        unmount_usb()
-        power_down()
+        shutdown()
 
 def handle_exit(signum, frame):
     logging.warning(f"Received exit signal ({signum}), cleaning up...")
@@ -371,9 +372,8 @@ def main():
             except Exception as e:
                 logging.error(f"Failed to delete render folder: {e}")
             set_led_status("shutdown")
-            logging.info("Render-only mode complete. Powering down in 5 seconds.")
-            time.sleep(5)
-            power_down()
+            logging.info("Render-only mode complete.")
+            shutdown()
             return
         set_led_status("ready")  # ready to record
         delete_old_images()
